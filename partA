@@ -1,0 +1,70 @@
+package Part1;
+
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+
+public class PartA {
+	
+	public static short[][] grayImage;
+    public static int width;
+    public static int height;
+    private static BufferedImage image;
+	
+    public static void main(String[] args){
+    	String fileNameInp="TenCardG.jpg";
+	    String fileNameOut="Template.jpg";
+	    readColourImage(fileNameOut);
+	    readColourImage(fileNameInp);
+    }
+	public static short[][] readColourImage(String fileName) {
+        
+		
+		    
+        try
+        {
+         // RGB pixel values
+         byte[] pixels;
+
+         File inp=new File(fileName);
+         image = ImageIO.read(inp);
+         width = image.getWidth();
+         height = image.getHeight();          
+        
+         
+         pixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
+         System.out.println("Dimension of the " + fileName +" image: WxH= " + width + " x "+height+" "+ "| num of pixels: "+ pixels.length);
+     
+     
+    
+         //rgb2gray in a 2D array grayImage                 
+         int pr;// red
+         int pg;//  green
+         int pb;// blue     
+
+        grayImage =new short [height][width];
+        int coord;
+        for (int i=0; i<height;i++)
+     	   for(int j=0;j<width;j++)
+     	   {        		     
+     		   coord= 3*(i*width+j);
+     		   pr= ((short) pixels[coord] & 0xff); // red
+                pg= (((short) pixels[coord+1] & 0xff));//  green
+                pb= (((short) pixels[coord+2] & 0xff));// blue                
+                
+     		   grayImage[i][j]=(short)Math.round(0.299 *pr + 0.587 * pg  + 0.114 * pb);         
+     	   }  
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            }
+		return grayImage; 
+		 
+
+}
+   
+
+}
