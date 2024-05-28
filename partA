@@ -17,13 +17,41 @@ public class PartA {
     public static void main(String[] args){
     	String fileNameInp="TenCardG.jpg";
 	    String fileNameOut="Template.jpg";
+	    
+	    
+	    
+	    
+        File inp=new File(fileNameInp);
+        try {
+			image = ImageIO.read(inp);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        int width_o = image.getWidth();
+        int height_o = image.getHeight();
+        int tempSize = width_o*height_o;
+        System.out.println(fileNameInp + " width: " + width_o + " and height:" + height_o + "\nThe temp size is "+ tempSize);
+        
+        
+        File inp1=new File(fileNameOut);
+        try {
+			image = ImageIO.read(inp1);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        width = image.getWidth();
+        height = image.getHeight();
+        int tempSize1 = width*height;
+        System.out.println(fileNameInp + " width: " + width + " and height:" + height + "\nThe temp size is "+ tempSize1);
+       
+        
 	    readColourImage(fileNameOut);
 	    readColourImage(fileNameInp);
     }
 	public static short[][] readColourImage(String fileName) {
-        
-		
-		    
+ 
         try
         {
          // RGB pixel values
