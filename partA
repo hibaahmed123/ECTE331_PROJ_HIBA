@@ -44,7 +44,7 @@ public class PartA {
         width = image.getWidth();
         height = image.getHeight();
         int tempSize1 = width*height;
-        System.out.println(fileNameInp + " width: " + width + " and height:" + height + "\nThe temp size is "+ tempSize1);
+        System.out.println(fileNameOut + " width: " + width + " and height:" + height + "\nThe temp size is "+ tempSize1);
        
         
 	    readColourImage(fileNameOut);
