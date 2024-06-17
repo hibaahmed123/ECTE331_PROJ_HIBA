@@ -1,221 +1,187 @@
-package projectPartB;
+package PartB;
 
+public class PartB {
 	
-class Data{
-	//defining shared integer variables 
+
+		public static void main(String[] args) throws InterruptedException{	
+			// TODO Auto-generated method stub
+			
+			Data sample = new Data();
+			
+			int i;
+			int test_size=100;
+			for(i=0; i<test_size; i++) {
+				System.out.println("Loop "+ i +"\n");
+				
+				boolean goFuncA1=false;
+				boolean goFuncA2=false;
+				boolean goFuncA3=false;
+				boolean goFuncB1=false;
+				boolean goFuncB2=false;
+				boolean goFuncB3=false;
+				
+				
+				
+				ThreadA ta = new ThreadA(sample);
+				ThreadB tb = new ThreadB(sample);
+				ta.start();
+				tb.start();
+				ta.join();
+				tb.join();
+
+
+				System.out.println("\n");
+
+			}
+		}
+	}
+	class Data
+	{
 		int A1,A2,A3,B1,B2,B3;
-		
-	//pre-setting the thread function variables to false 
-		boolean goFuncA1 = false;
-		boolean goFuncA2 = false;
-		boolean goFuncA3 = false;
-		boolean goFuncB1 = false;
-		boolean goFuncB2 = false;
-		boolean goFuncB3 = false;
+		boolean goFuncA1=false;
+		boolean goFuncA2=false;
+		boolean goFuncA3=false;
+		boolean goFuncB1=false;
+		boolean goFuncB2=false;
+		boolean goFuncB3=false;
 		
 	}
+	class ThreadA extends Thread{
+		private Data sample;
 
-public class TaskB {
-	//main function
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		Data my_sample = new Data();
-		
-		int i;
-		int testSize = 50;
-		
-		for (i=0;i<testSize;i++) {
-			
-			System.out.println("loop "+i+ "\n");
-			//re-setting the thread functions to false to avoid thread clashes
-			my_sample.goFuncA1 = false;
-			my_sample.goFuncA2 = false;
-			my_sample.goFuncA3 = false;
-			my_sample.goFuncB1 = false;
-			my_sample.goFuncB2 = false;
-			my_sample.goFuncB3 = false;
-			
-			//setting threadA constructor to execute the thread
-			ThreadA threadA = new ThreadA(my_sample);
-			//setting threadB constructor to execute the thread
-			ThreadB threadB = new ThreadB(my_sample);
-			
-			//starting threadA
-			threadA.start();
-			//starting threadB
-			threadB.start();
-			
-			
-			try {
-				//waiting for threadA to finish before executing
-				threadA.join();
-			} catch (InterruptedException e) { //incase of Interupption, the stack trace will be printed
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-			try {
-				//waiting for threadB to finish before executing
-				threadB.join();
-			} catch (InterruptedException e) { //incase of Interupption, the stack trace will be printed
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-			
-		}
-		
+		public ThreadA(Data sample) {
+		this.sample = sample;
 	}
 
-}
-
-//creating a class of ThreadA to work as a Thread
-class ThreadA extends Thread{
-	//object of type Data to use in code is created to be used in the class
-	private Data my_sample;
-	//contructor for Thread A, takes in Data object (from the class) as input
-	public ThreadA(Data my_sample) {
-		this.my_sample = my_sample; //object used by the thread
-	}
-	
-	//defining tasks to be run by the thread within the run function
-	public void run() {
-		//synchronize the data
-		synchronized (my_sample) {
-			 //defining values of A1 as given formulas in the project sheet
+		public void run() {
+		synchronized(sample) {
 			int n = 500;
-			my_sample.A1 = n*(n+1)/2; //value of A1
-			System.out.println("Value of A1 : " + my_sample.A1); //printing value of A1
-			my_sample.goFuncB2 = true; //signalling ThreadB to proceed with B2 
-			my_sample.notify(); //notify any waiting threads
-			my_sample.goFuncA1 = false; //to indicate A1 is completed 
-
+			sample.A1 = n*(n+1)/2;
+			System.out.println("A1 = " + sample.A1);
+			sample.goFuncB2 = true;
+			sample.notify();
+			sample.goFuncA1 = false;
+			//print out the value of A1
 		}
 		
-		//synchronize data for A2
-		synchronized (my_sample) {
-			//waiting for ThreadB to complete B2 and signal ThreadA to proceed with A2
-			while(my_sample.goFuncA2 == false) {
-				System.out.println("First B2 to be run"); //error message for when B2 is not yet executed
+		synchronized(sample){
+			while(sample.goFuncA2==false) {
+				System.out.println("First run B2 to get to A2");
 				try {
-					my_sample.wait();//signalling to wait for notification from ThreadB
+					sample.wait();
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+				
+			}
+		}
+		synchronized(sample) {
+			while(sample.goFuncA2==true) {
+				int i = 300;
+				sample.A2 = sample.B2+(i*(i+1))/2;
+				System.out.println("A2 = " + sample.A2);
+				sample.goFuncB3=true;
+				sample.notify();
+				sample.goFuncA2 = false;
 				break;
 			}
-			while (my_sample.goFuncA2 == true) {
-				//defining values of A2 as given formulas in the project sheet
-				int n = 300;
-				my_sample.A2 = my_sample.B2 + (n*(n+1)/2);//calculating vale of A2 using B2 value
-				System.out.println("Value of A2 : " + my_sample.A2);//printing value of A2
-				my_sample.goFuncB3 = true;//signalling ThreadB to proceed with B3
-				my_sample.notify();//notify any waiting threads
-				my_sample.goFuncA2 = false;//to indicate A2 is completed 
-
-			}
-		//synchronize data for A3
-		synchronized (my_sample) {
-			//waiting for ThreadB to complete B3 and signal ThreadA to proceed with A3
-			while(my_sample.goFuncA3 == false) {
-				System.out.println("First B3 to be run");//error message for when B3 is not yet executed
+		}
+		synchronized(sample) {
+			while(sample.goFuncA3==false) {
+				System.out.println("First run B3 to get A3");
 				try {
-					my_sample.wait();//signalling to wait for notification from ThreadB
-				} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
+					sample.wait();
+				}
+				catch (InterruptedException e) {
 					e.printStackTrace();
 				}
-				break;
-				}
-			while (my_sample.goFuncA3 == true) {
-				//defining values of A2 as given formulas in the project sheet
+				
+			}
+			
+		}
+		synchronized(sample) {
+			while(sample.goFuncA3==true) {
 				int n = 400;
-				my_sample.A3 = my_sample.B3 + (n*(n+1)/2);//calculating value of A3 using value of B3
-				System.out.println("Value of A3 : " + my_sample.A3);//printing value of A3
-				my_sample.notify();//notifying all waiting threads
-				my_sample.goFuncA3 = false;//to indicate A3 is completed
-	
-				}
-			
-			
-		}
-	}
-}
-}
-
-//creating a class of ThreadB to work as a Thread
-class ThreadB extends Thread{
-	//object of type Data to use in code is created to use in the class
-	private Data my_sample;
-
-	//contructor for Thread A, takes in Data object (from the class) as input
-	public ThreadB(Data my_sample) {
-		this.my_sample = my_sample;//object used by the thread
-	}
-	
-	//defining tasks to be run by the thread within the run function
-	public void run() {
-		//synchronize the data
-		synchronized (my_sample) {
-			//calculate the value of B1 as given in the project task sheet
-			int n = 250;
-			my_sample.B1 = n*(n+1)/2; //calculating value of B1
-			my_sample.notify();//notifying any waiting threads
-			my_sample.goFuncB1 = false; //to indicate B1 is completed
-
-		}
-		
-		//synchronize the data for B2
-		synchronized (my_sample) {
-			//waiting for ThreadA to complete A1 and signal ThreadB to proceed with B2
-			while(my_sample.goFuncB2 == false) {
-				System.out.println("First A1 to be run");//error message for when A1 is not yet executed
-			
-				try {
-					my_sample.wait();//signalling to wait for notification from ThreadA
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				sample.A3 = sample.B3+(n*(n+1))/2;
+				System.out.println("A3 = " + sample.A3);
+				sample.notify();
+				sample.goFuncA3 = false;
 				break;
-
-			}
-		   while (my_sample.goFuncB2 == true) {
-				int n = 200;
-				//defining values of B2 as given formulas in the project sheet
-				my_sample.B2 = my_sample.A1 + (n*(n+1)/2); //calculating value of B2 using value of A1
-				System.out.println("Value of B2 : " + my_sample.B2); //printing the value of B2
-				my_sample.goFuncA2 = true; //signalling ThreadA to proceed with A2
-				my_sample.notify(); //notifying all waiting threads
-				my_sample.goFuncB2= false; //to indicate B2 is completed
-		
 			}
 		}
+	}
+	}
+
+	class ThreadB extends Thread{
+		private Data my_sample;
 		
-		//synchronize the data for B3
-		  synchronized (my_sample) {
-			//waiting for ThreadA to complete A2 and signal ThreadB to proceed with B3
-			while(my_sample.goFuncB3 == false) {
-				System.out.println("First A2 to be run");//error message for when A2 is not yet executed
-				try {
-					my_sample.wait();//signalling to wait for notification from ThreadA
-				} catch (InterruptedException e) {
+		public ThreadB(Data my_sample){
+			this.my_sample = my_sample;
+		}
+		public void run() {
+			
+			synchronized (my_sample) 
+			{
+				int n = 250;
+				my_sample.B1 = n * (n+1) / 2; 
+				System.out.println("B1 = " + my_sample.B1);
+				my_sample.goFuncB1 = false;
+				
+			}
+
+			
+			
+			synchronized (my_sample) {
+				while (my_sample.goFuncB2==false) {
+					System.out.println("First run A1 to get to B2");
+					try {
+						my_sample.wait();
+					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
-					e.printStackTrace();
+						e.printStackTrace();
+					}
 				}
-				break;
-	
+				
+				
+				
+			}
+			synchronized(my_sample) {
+				while (my_sample.goFuncB2==true) {
+					int z = 200;
+					my_sample.B2 = my_sample.A1 + z*(z+1)/2;
+					System.out.println("B2 = " + my_sample.B2);
+					my_sample.goFuncA2=true;
+					my_sample.notify();
+					my_sample.goFuncB2 = false;
+					break;
 				}
-			  while (my_sample.goFuncB3 == true) {
-				//defining values of B3 as given formulas in the project sheet
-				int n = 400;
-				my_sample.B3 = my_sample.A2 + (n*(n+1)/2); //calculating value of B3 using value of A2
-				System.out.println("Value of B3 : " + my_sample.B3);//printing value of B3
-				my_sample.goFuncA3 = true; //signalling ThreadA to proceed with A3
-				my_sample.notify();//notifying all waiting threads
-				my_sample.goFuncB3 = false;//to indicate B3 is completed
 				}
-		  }
+			synchronized(my_sample) {
+				while(my_sample.goFuncB3 ==false) {
+					System.out.println("First run A2 to get to B3");
+					try {
+						my_sample.wait();
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+			synchronized(my_sample) {
+				while(my_sample.goFuncB3 == true) {
+					int y = 400;
+					my_sample.B3 = my_sample.A2+ y*(y+1)/2;
+					System.out.println("B3 = " + my_sample.B3);
+					my_sample.goFuncA3=true;
+					my_sample.notify();
+					my_sample.goFuncB3 = false;
+					break;
+					
+				}
+			}
+			}
+		
 		}
-	}
+
+
