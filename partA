@@ -1,99 +1,140 @@
-package Part1;
+package PartA;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 
-//Class PartA
+// Class PartA
 public class PartA {
 	
-	public static short[][] grayImage;
-    public static int width;
-    public static int height;
-    private static BufferedImage image;
-	
-    public static void main(String[] args){
-    	String fileNameInp="TenCardG.jpg";
-	    String fileNameOut="Template.jpg";
-	    
-	    
-	    
-	    
-        File inp=new File(fileNameInp);
-        try {
-			image = ImageIO.read(inp);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-        int width_o = image.getWidth();
-        int height_o = image.getHeight();
-        int tempSize = width_o*height_o;
-        System.out.println(fileNameInp + " width: " + width_o + " and height:" + height_o + "\nThe temp size is "+ tempSize);
-        
-        
-        File inp1=new File(fileNameOut);
-        try {
-			image = ImageIO.read(inp1);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-        width = image.getWidth();
-        height = image.getHeight();
-        int tempSize1 = width*height;
-        System.out.println(fileNameOut + " width: " + width + " and height:" + height + "\nThe temp size is "+ tempSize1);
-       
-        
-	    readColourImage(fileNameOut);
-	    readColourImage(fileNameInp);
-    }
-	public static short[][] readColourImage(String fileName) {
- 
-        try
-        {
-         // RGB pixel values
-         byte[] pixels;
+    // Global variables for storing the grayscale image, width, height, and BufferedImage objects
+    public static short[][] grayscaleImage;
+    public static int imageWidth;
+    public static int imageHeight;
+    private static BufferedImage sourceBufferedImage;
+    private static BufferedImage templateBufferedImage;
 
-         File inp=new File(fileName);
-         image = ImageIO.read(inp);
-         width = image.getWidth();
-         height = image.getHeight();          
-        
-         
-         pixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
-         System.out.println("Dimension of the " + fileName +" image: WxH= " + width + " x "+height+" "+ "| num of pixels: "+ pixels.length);
-     
-     
-    
-         //rgb2gray in a 2D array grayImage                 
-         int pr;// red
-         int pg;//  green
-         int pb;// blue     
+    public static void main(String[] args) throws IOException {
+        // Paths to the source and template images
+        String sourceImagePath = "TenCardG.jpg";
+        String templateImagePath = "Template.jpg";
 
-        grayImage =new short [height][width];
-        int coord;
-        for (int i=0; i<height;i++)
-     	   for(int j=0;j<width;j++)
-     	   {        		     
-     		   coord= 3*(i*width+j);
-     		   pr= ((short) pixels[coord] & 0xff); // red
-                pg= (((short) pixels[coord+1] & 0xff));//  green
-                pb= (((short) pixels[coord+2] & 0xff));// blue                
-                
-     		   grayImage[i][j]=(short)Math.round(0.299 *pr + 0.587 * pg  + 0.114 * pb);         
-     	   }  
+        // Read the source image from the file
+        File sourceFile = new File(sourceImagePath);
+        sourceBufferedImage = ImageIO.read(sourceFile);
+        short[][] sourceImageArray = readColorImage(sourceImagePath);
+
+        // Read the template image from the file
+        File templateFile = new File(templateImagePath);
+        templateBufferedImage = ImageIO.read(templateFile);
+        short[][] templateImageArray = readColorImage(templateImagePath);
+
+        // Perform template matching
+        performTemplateMatching(sourceImageArray, templateImageArray);
+
+        // Save the result image
+        saveColorImage("Result.jpg");
+
+        // Print a message to the console
+        System.out.println("Result image saved as: Result.jpg");
+
+        // Verify if the result file exists and print a message
+        File resultFile = new File("Result.jpg");
+        if (resultFile.exists()) {
+            System.out.println("Result.jpg has been successfully created.");
+        } else {
+            System.out.println("Failed to create Result.jpg.");
         }
-        catch (IOException e) {
-            e.printStackTrace();
+    }
+
+    // Method to read a color image and convert it to grayscale
+    public static short[][] readColorImage(String fileName) throws IOException {
+        BufferedImage image = ImageIO.read(new File(fileName));
+        imageWidth = image.getWidth();
+        imageHeight = image.getHeight();
+
+        // Get the pixel data from the image
+        byte[] pixelData = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
+        grayscaleImage = new short[imageHeight][imageWidth];
+
+        int index, red, green, blue;
+        // Convert the image to grayscale
+        for (int row = 0; row < imageHeight; row++) {
+            for (int col = 0; col < imageWidth; col++) {
+                index = 3 * (row * imageWidth + col);
+                red = pixelData[index] & 0xff;
+                green = pixelData[index + 1] & 0xff;
+                blue = pixelData[index + 2] & 0xff;
+                grayscaleImage[row][col] = (short) Math.round(0.299 * red + 0.587 * green + 0.114 * blue);
             }
-		return grayImage; 
-		 
+        }
+        return grayscaleImage;
+    }
 
-}
-   
+    // Method to perform template matching
+    public static void performTemplateMatching(short[][] sourceImageArray, short[][] templateImageArray) {
+        int sourceRows = sourceImageArray.length;
+        int sourceCols = sourceImageArray[0].length;
+        int templateRows = templateImageArray.length;
+        int templateCols = templateImageArray[0].length;
+        int templateSize = templateRows * templateCols;
+        double minDifference = Double.MAX_VALUE;
+        double[][] absoluteDifferenceMatrix = new double[sourceRows - templateRows + 1][sourceCols - templateCols + 1];
 
+        // Calculate the absolute differences and find the minimum
+        for (int row = 0; row <= sourceRows - templateRows; row++) {
+            for (int col = 0; col <= sourceCols - templateCols; col++) {
+                double absoluteDifference = 0.0;
+                for (int templateRow = 0; templateRow < templateRows; templateRow++) {
+                    for (int templateCol = 0; templateCol < templateCols; templateCol++) {
+                        absoluteDifference += Math.abs(sourceImageArray[row + templateRow][col + templateCol] - templateImageArray[templateRow][templateCol]);
+                    }
+                }
+                absoluteDifference /= templateSize;
+                absoluteDifferenceMatrix[row][col] = absoluteDifference;
+
+                if (absoluteDifference < minDifference) {
+                    minDifference = absoluteDifference;
+                }
+            }
+        }
+
+        // Determine the threshold
+        double threshold = 10 * minDifference;
+
+        // Find and store all coordinates that are below the threshold
+        List<int[]> matchCoordinates = new ArrayList<int[]>();
+        for (int row = 0; row <= sourceRows - templateRows; row++) {
+            for (int col = 0; col <= sourceCols - templateCols; col++) {
+                if (absoluteDifferenceMatrix[row][col] <= threshold) {
+                    matchCoordinates.add(new int[]{row, col});
+                }
+            }
+        }
+
+        // Draw rectangles at all stored coordinates
+        for (int[] coordinate : matchCoordinates) {
+            drawRectangle(sourceBufferedImage, coordinate[1], coordinate[0], templateCols, templateRows);
+        }
+    }
+
+    // Method to draw a rectangle on the image
+    public static void drawRectangle(BufferedImage image, int x, int y, int rectWidth, int rectHeight) {
+        Graphics2D graphics2D = image.createGraphics();
+        graphics2D.setColor(Color.BLUE);
+        graphics2D.drawRect(x, y, rectWidth, rectHeight);
+        graphics2D.dispose();
+    }
+
+    // Method to save the image to a file
+    public static void saveColorImage(String fileName) throws IOException {
+        ImageIO.write(sourceBufferedImage, "jpg", new File(fileName));
+    }
 }
